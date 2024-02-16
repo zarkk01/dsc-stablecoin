@@ -1,16 +1,16 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import { Script , console } from "forge-std/Script.sol";
-import { MockV3Aggregator } from "../test/mocks/MockV3Aggregator.sol";
+import {Script, console} from "forge-std/Script.sol";
+import {MockV3Aggregator} from "../test/mocks/MockV3Aggregator.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 contract HelperConfig is Script {
-
     uint8 private constant DECIMALS = 8;
     int256 private constant ETH_PRICE = 2000e8;
     int256 private constant BTC_PRICE = 40000e8;
-    uint256 public constant DEFAULT_ANVIL_PRIVATE_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+    uint256 public constant DEFAULT_ANVIL_PRIVATE_KEY =
+        0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
 
     NetworkConfig public activeConfig;
 
@@ -23,18 +23,17 @@ contract HelperConfig is Script {
     }
 
     constructor() {
-        if(block.chainid == 11155111) {
+        if (block.chainid == 11155111) {
             activeConfig = getSepoliaConfig();
         } else {
             activeConfig = getOrCreateAnvilConfig();
         }
-
     }
 
-//    function getMainnetConfig() internal view returns(NetworkConfig memory){
-//    }
+    //    function getMainnetConfig() internal view returns(NetworkConfig memory){
+    //    }
 
-    function getSepoliaConfig() internal view returns(NetworkConfig memory) {
+    function getSepoliaConfig() internal view returns (NetworkConfig memory) {
         return NetworkConfig({
             wethUsdPriceFeed: 0x694AA1769357215DE4FAC081bf1f309aDC325306,
             wbtcUsdPriceFeed: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43,
@@ -44,7 +43,7 @@ contract HelperConfig is Script {
         });
     }
 
-    function getOrCreateAnvilConfig() internal returns(NetworkConfig memory){
+    function getOrCreateAnvilConfig() internal returns (NetworkConfig memory) {
         if (activeConfig.wethUsdPriceFeed != address(0)) {
             return activeConfig;
         }
@@ -64,7 +63,4 @@ contract HelperConfig is Script {
             deployerkey: DEFAULT_ANVIL_PRIVATE_KEY
         });
     }
-
-
-
 }

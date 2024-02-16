@@ -1,10 +1,10 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import { Script , console } from "forge-std/Script.sol";
-import { DecentralizedStableCoin } from "../src/DecentralizedStableCoin.sol";
-import { DSCEngine } from "../src/DSCEngine.sol";
-import { HelperConfig } from "./HelperConfig.s.sol";
+import {Script, console} from "forge-std/Script.sol";
+import {DecentralizedStableCoin} from "../src/DecentralizedStableCoin.sol";
+import {DSCEngine} from "../src/DSCEngine.sol";
+import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract DeployDSC is Script {
     HelperConfig public config;
@@ -17,15 +17,9 @@ contract DeployDSC is Script {
     address[] public priceFeeds;
     address[] public tokenAddresses;
 
-    function run() external returns(DecentralizedStableCoin, DSCEngine, HelperConfig) {
+    function run() external returns (DecentralizedStableCoin, DSCEngine, HelperConfig) {
         config = new HelperConfig();
-        (
-            wethUsdPriceFeed,
-            wbtcUsdPriceFeed,
-            weth,
-            wbtc,
-            deployerkey
-        ) = config.activeConfig();
+        (wethUsdPriceFeed, wbtcUsdPriceFeed, weth, wbtc, deployerkey) = config.activeConfig();
 
         priceFeeds.push(wethUsdPriceFeed);
         priceFeeds.push(wbtcUsdPriceFeed);
@@ -33,9 +27,9 @@ contract DeployDSC is Script {
         tokenAddresses.push(wbtc);
         vm.startBroadcast(deployerkey);
         DecentralizedStableCoin dsc = new DecentralizedStableCoin();
-        DSCEngine dscEngine = new DSCEngine(tokenAddresses,priceFeeds,address(dsc));
+        DSCEngine dscEngine = new DSCEngine(tokenAddresses, priceFeeds, address(dsc));
         dsc.transferOwnership(address(dscEngine));
         vm.stopBroadcast();
-        return (dsc, dscEngine,config);
+        return (dsc, dscEngine, config);
     }
 }
