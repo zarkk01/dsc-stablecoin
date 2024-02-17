@@ -28,7 +28,7 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__NotAllowedCollateral();
     error DSCEngine__NotEqualLength();
     error DSCEngine__TransferFailed();
-    error DSCEngine__BelowMinHealthFactor();
+    error DSCEngine__HealthFactorBroken();
     error DSCEngine__NotMinted();
     error DSCEngine__HealthFactorOK();
     error DSCEngine__HealthFactorNotImproved();
@@ -165,7 +165,9 @@ contract DSCEngine is ReentrancyGuard {
         bonusCollateral = tokenAmountFromDebtCovered * LIQUIDATION_BONUS / 100;
     }
 
-    function getHealthFactor() external view {}
+    function getHealthFactor(address user) external view returns (uint256 healthFactor) {
+        healthFactor = _healthFactor(user);
+    }
 
     function getCollateralValueInUSD(address userAddress) public view returns (uint256 totalValue) {
         for (uint256 i = 0; i < s_collateralTokens.length; i++) {
@@ -200,7 +202,7 @@ contract DSCEngine is ReentrancyGuard {
 
     function _burnDsc(uint256 amountDscToBurn, address onBehalfOf, address dscFrom) private {
         s_mintedDsc[onBehalfOf] -= amountDscToBurn;
-        bool success = i_dsc.transferFrom(dscFrom, address(0), amountDscToBurn);
+        bool success = i_dsc.transferFrom(dscFrom, address(this), amountDscToBurn);
         if (!success) {
             revert DSCEngine__TransferFailed();
         }
@@ -210,7 +212,7 @@ contract DSCEngine is ReentrancyGuard {
     function _revertIfHealthFactorIsBroken(address userAddress) internal view {
         uint256 userHealthFactor = _healthFactor(userAddress);
         if (userHealthFactor < MIN_HEALTH_FACTOR) {
-            revert DSCEngine__BelowMinHealthFactor();
+            revert DSCEngine__HealthFactorBroken();
         }
     }
 

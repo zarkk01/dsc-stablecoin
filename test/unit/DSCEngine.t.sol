@@ -97,11 +97,11 @@ contract DSCEngineTest is Test {
     }
 
     // Test that if user deposits, his info (state) changes and his deposited collateral is added
-    function testDepositCollateralAddsCollateralInUser() depositedCollateral(100) public {
+    function testDepositCollateralAddsCollateralInUser() public depositedCollateral(100) {
         // Here, we take how much collateral the user has in USD in WEI
         (, uint256 totalCollateral) = dscEngine.getUserInformation(address(USER));
         // Here, we give the amount of collateral in USD in WEI and we expect back to see the WETH
-        (uint256 givenUsdHowExpectedETH, ) = dscEngine.getTokenAmountFromUsd(wethAddress, totalCollateral);
+        (uint256 givenUsdHowExpectedETH,) = dscEngine.getTokenAmountFromUsd(wethAddress, totalCollateral);
         // Here, we expect the WETH to be as the WETH we deposited mean 100 WETH
         assertEq(givenUsdHowExpectedETH, 100 ether);
     }
@@ -116,7 +116,7 @@ contract DSCEngineTest is Test {
         vm.stopPrank();
     }
 
-    function testRedeemCollateralIndeedRedeems() depositedCollateral(100) public {
+    function testRedeemCollateralIndeedRedeems() public depositedCollateral(100) {
         uint256 balanceOfUserBeforeRedeem = ERC20Mock(wethAddress).balanceOf(USER);
         vm.startPrank(USER);
         dscEngine.redeemCollateral(wethAddress, 20 ether);
@@ -125,7 +125,7 @@ contract DSCEngineTest is Test {
         assertEq(balanceOfUserBeforeRedeem + 20 ether, balanceOfUserAfterRedeem);
     }
 
-    function testRedeemCollateralUpdatesMappings() depositedCollateral(100) public {
+    function testRedeemCollateralUpdatesMappings() public depositedCollateral(100) {
         vm.startPrank(USER);
         dscEngine.redeemCollateral(wethAddress, 20 ether);
         vm.stopPrank();
@@ -140,5 +140,52 @@ contract DSCEngineTest is Test {
         vm.expectRevert(DSCEngine.DSCEngine__NotZero.selector);
         dscEngine.mintDsc(0 ether);
         vm.stopPrank();
+    }
+
+    function testMintDscUpdatesUserInfo() public depositedCollateral(100) {
+        vm.startPrank(USER);
+        dscEngine.mintDsc(50);
+        (uint256 expectedMintedDsc,) = dscEngine.getUserInformation(USER);
+        vm.stopPrank();
+        assertEq(expectedMintedDsc, 50);
+    }
+
+    /////////////////////
+    // Burn DSC /////////
+    /////////////////////
+    function testRevertsForZeroBurnAmount() public depositedCollateral(1) {
+        vm.startPrank(USER);
+        dscEngine.mintDsc(1000);
+        vm.expectRevert(DSCEngine.DSCEngine__NotZero.selector);
+        dscEngine.burnDsc(0);
+        vm.stopPrank();
+    }
+
+    function testBurnMethodIndeedBurnsDSC() public depositedCollateral(1) {
+        vm.startPrank(USER);
+        dscEngine.mintDsc(1000);
+        dsc.approve(address(dscEngine), 500);
+        dscEngine.burnDsc(500);
+        vm.stopPrank();
+        assertEq(dscEngine.s_mintedDsc(USER), 500);
+    }
+
+    ////////////////////
+    // Liquidate //////
+    ///////////////////
+
+    modifier depositedAndMinted() {
+        vm.startPrank(USER);
+        ERC20Mock(wethAddress).approve(address(dscEngine), 1 * 1e18);
+        dscEngine.depositCollateral(wethAddress,1*1e18);
+        dscEngine.mintDsc(1);
+        vm.stopPrank();
+        _;
+    }
+
+    function testRevertsForZeroDebtAmountToBeLiquidated() public {
+        vm.startPrank(USER);
+        vm.expectRevert(DSCEngine.DSCEngine__NotZero.selector);
+        dscEngine.liquidate(wethAddress, USER, 0);
     }
 }
