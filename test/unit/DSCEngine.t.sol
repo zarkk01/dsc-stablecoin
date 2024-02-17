@@ -35,8 +35,9 @@ contract DSCEngineTest is Test {
     //////////////////
     function testGetUsdValue() public {
         (, int256 price,,,) = MockV3Aggregator(ethUsdPriceFeed).latestRoundData();
-        uint256 ethAmount = 15 ether;
+        uint256 ethAmount = 1 ether;
         uint256 expectedUsdValue = uint256(price) * ethAmount / 10 ** 8;
+        console.log("Expected Value: ", expectedUsdValue);
         assertEq(dscEngine.getUsdValue(wethAddress, ethAmount), expectedUsdValue);
     }
 
