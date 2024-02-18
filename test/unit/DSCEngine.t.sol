@@ -177,7 +177,7 @@ contract DSCEngineTest is Test {
     modifier depositedAndMinted() {
         vm.startPrank(USER);
         ERC20Mock(wethAddress).approve(address(dscEngine), 1 * 1e18);
-        dscEngine.depositCollateral(wethAddress,1*1e18);
+        dscEngine.depositCollateral(wethAddress, 1 * 1e18);
         dscEngine.mintDsc(1);
         vm.stopPrank();
         _;

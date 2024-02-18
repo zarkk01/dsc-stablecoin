@@ -216,12 +216,9 @@ contract DSCEngine is ReentrancyGuard {
         }
     }
 
-    /////// BUG ////////
     function _healthFactor(address userAddress) private view returns (uint256) {
         (uint256 totalDscMinted, uint256 totalCollateralValue) = _getUserInformation(userAddress);
-        uint256 totalCollateralValueAdjustedForThreshold =
-            totalCollateralValue * LIQUIDATION_THRESHOLD / LIQUIDATION_PRECISION;
-        return totalCollateralValueAdjustedForThreshold * PRECISION / totalDscMinted;
+        return _calculateHealthFactor(totalDscMinted, totalCollateralValue);
     }
 
     function _getUserInformation(address userAddress)
@@ -239,5 +236,22 @@ contract DSCEngine is ReentrancyGuard {
         returns (uint256 totalDscMinted, uint256 totalCollateralInUSD)
     {
         return _getUserInformation(userAddress);
+    }
+
+
+    function _calculateHealthFactor(uint256 totalDscMinted, uint256 totalCollateralInUSD) private view returns(uint256) {
+        // If no DSC minted, then health factor is max, this is how we fixed the bug.
+        if(totalDscMinted == 0) return type(uint256).max;
+        uint256 collateralAdjustedForThreshold = (totalCollateralInUSD * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
+        return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
+    }
+
+
+    function calculateHealthFactor(uint256 totalDscMinted, uint256 totalCollateralInUSD)
+        external
+        view
+        returns (uint256)
+    {
+        return _calculateHealthFactor(totalDscMinted, totalCollateralInUSD);
     }
 }
