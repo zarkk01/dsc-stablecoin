@@ -6,28 +6,46 @@ import {DeployDSC} from "../../script/DeployDSC.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {DecentralizedStableCoin} from "../../src/DecentralizedStableCoin.sol";
 import {DSCEngine} from "../../src/DSCEngine.sol";
-import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {MockV3Aggregator} from "../mocks/MockV3Aggregator.sol";
+import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
+
+/**
+ * @title DSCEngineTest
+ * @notice This contract is used to test the functionality of the DSCEngine contract.
+ * @dev It inherits from the Test contract. It uses DeployDSC, HelperConfig, DecentralizedStableCoin,
+ * DSCEngine, ERC20Mock, and MockV3Aggregator for testing purposes.
+ */
 contract DSCEngineTest is Test {
-    DeployDSC public deployDSC;
+    // Contracts to be used in the tests
+    DeployDSC public deployer;
     DecentralizedStableCoin public dsc;
     DSCEngine public dscEngine;
     HelperConfig public config;
+
+    // Addresses to be used in the tests
     address public ethUsdPriceFeed;
     address public btcUsdPriceFeed;
     address public wethAddress;
 
+    // Our fake user which will start with 100 WETH
     address public USER = makeAddr("USER");
     uint256 public constant STARTING_ETHER = 100 ether;
+    // Random wrong token address to test reverts
     address public constant RANDOM_WRONG_TOKEN_ADDRESS = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9;
 
+    // SetUp function that will be run before tests and will deploy the DSC and get the contracts
+    // Also, it will give 100 WETH to the user and will mint fake Mock ETH for him so to deposit on our contract
     function setUp() public {
         vm.startBroadcast();
-        deployDSC = new DeployDSC();
+        // Deploy the contracts using the DeployDSC script
+        deployer = new DeployDSC();
         vm.stopBroadcast();
-        (dsc, dscEngine, config) = deployDSC.run();
+        // Run the deployer and get the contracts
+        (dsc, dscEngine, config) = deployer.run();
+        // From the config take the feeds and the WETH address for the fake Mock ETH
         (ethUsdPriceFeed, btcUsdPriceFeed, wethAddress,,) = config.activeConfig();
+        // For this fake Mock ETH, we mint 100
         ERC20Mock(wethAddress).mint(USER, 100 ether);
         vm.deal(USER, 100 ether);
     }
@@ -173,7 +191,6 @@ contract DSCEngineTest is Test {
     ////////////////////
     // Liquidate //////
     ///////////////////
-
     modifier depositedAndMinted() {
         vm.startPrank(USER);
         ERC20Mock(wethAddress).approve(address(dscEngine), 1 * 1e18);

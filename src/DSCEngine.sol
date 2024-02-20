@@ -317,7 +317,7 @@ contract DSCEngine is ReentrancyGuard {
     // It gonna be something like this : (totalCollateralValue * 50) / totalDscMinted
     function calculateHealthFactor(uint256 totalDscMinted, uint256 totalCollateralInUSD)
         external
-        view
+        pure
         returns (uint256)
     {
         // Call the internal function to calculate the health factor
@@ -427,7 +427,7 @@ contract DSCEngine is ReentrancyGuard {
     // This function is used to calculate the health factor of a user, given the totalDscMinted and the totalCollateralValue
     function _calculateHealthFactor(uint256 totalDscMinted, uint256 totalCollateralInUSD)
         private
-        view
+        pure
         returns (uint256)
     {
         // If no DSC minted, then health factor is max, this is how we fixed the bug.

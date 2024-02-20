@@ -7,34 +7,45 @@ import {DecentralizedStableCoin} from "../../src/DecentralizedStableCoin.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {MockV3Aggregator} from "../mocks/MockV3Aggregator.sol";
 
-// Handler is going to narrow down the way the functions are called
+
 contract Handler is Test {
+    // Constants
+    uint256 constant MAX_DEPOSIT = type(uint96).max;
+
+    // Contracts to be used in the tests
     DSCEngine dsce;
     DecentralizedStableCoin dsc;
-    address[] collateralTokens;
-    ERC20Mock weth;
-    ERC20Mock wbtc;
-    uint256 public timesMintedCalled;
-    address[] public users;
     MockV3Aggregator wethAggregator;
     MockV3Aggregator wbtcAggregator;
+    ERC20Mock weth;
+    ERC20Mock wbtc;
 
+    // Variables
+    address[] public users;
+    address[] collateralTokens;
     int256 public priceWeth;
     int256 public priceWbtc;
 
-    uint256 constant MAX_DEPOSIT = type(uint96).max;
-
+    /**
+     * @notice Sets up the initial state for the tests.
+     * @param _dsce The DSCEngine contract to be tested.
+     * @param _dsc The DecentralizedStableCoin contract to be tested.
+     */
     constructor(DSCEngine _dsce, DecentralizedStableCoin _dsc) {
+        // Assign given contracts to the state variables
         dsce = _dsce;
         dsc = _dsc;
 
+        // Get the collateral tokens and the price feeds
         collateralTokens = dsce.getCollateralTokens();
         weth = ERC20Mock(collateralTokens[0]);
         wbtc = ERC20Mock(collateralTokens[1]);
 
+        // Get the price feeds
         wethAggregator = MockV3Aggregator(dsce.getPriceFeed(address(weth)));
         wbtcAggregator = MockV3Aggregator(dsce.getPriceFeed(address(wbtc)));
 
+        // Get the prices
         (, priceWeth,,,) = wethAggregator.latestRoundData();
         (, priceWbtc,,,) = wbtcAggregator.latestRoundData();
     }
@@ -42,9 +53,6 @@ contract Handler is Test {
     // Deposit Collateral
     // Here, we gonna pass random numbers instead of random addresses, because it is easier to predict
     function depositCollateral(uint256 collateralSeed, uint256 collateralAmount) public {
-        console.log("price of btc: ", uint256(priceWbtc));
-        console.log("price of eth: ", uint256(priceWeth));
-
         // Like that we take the address of the collateral token but it is random which one
         ERC20Mock collateralToken = _getCollateralFromSeed(collateralSeed);
         // Here, we bound the amount to be between 1 and MAX_DEPOSIT
@@ -101,13 +109,12 @@ contract Handler is Test {
         // Mint the tokens
         dsce.mintDsc(amountBounded);
         vm.stopPrank();
-
-        timesMintedCalled++;
     }
 
     // Helper functions
     // With this function we only get valid addresses as collateral, either wbtc or weth
     function _getCollateralFromSeed(uint256 seed) private view returns (ERC20Mock) {
+        // From this random seed that is given we take true or false and return weth or wbtc
         if (seed % 2 == 0) {
             return weth;
         } else {
