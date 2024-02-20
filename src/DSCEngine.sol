@@ -238,7 +238,6 @@ contract DSCEngine is ReentrancyGuard {
         return _getUserInformation(userAddress);
     }
 
-
     function _calculateHealthFactor(uint256 totalDscMinted, uint256 totalCollateralInUSD) private view returns(uint256) {
         // If no DSC minted, then health factor is max, this is how we fixed the bug.
         if(totalDscMinted == 0) return type(uint256).max;
@@ -253,5 +252,9 @@ contract DSCEngine is ReentrancyGuard {
         returns (uint256)
     {
         return _calculateHealthFactor(totalDscMinted, totalCollateralInUSD);
+    }
+
+    function getCollateralTokens() external view returns (address[] memory) {
+        return s_collateralTokens;
     }
 }
