@@ -25,7 +25,7 @@ The system uses a Decentralized Stable Coin (DSC) which follows ERC20 token stan
 
 ## Deployment
 
-You can see the deployed contract on the Sepolia Testnet at the following address: [0xCF4A0A901C3F7A4a173FC38C48bEc9a9bF7F5a20](https://sepolia.etherscan.io/address/0xCF4A0A901C3F7A4a173FC38C48bEc9a9bF7F5a20)
+You can see the deployed contract on the Sepolia Testnet at the following address: [0xbBB217768d1A2e1105ef867551B4e932B83e4DD3](https://sepolia.etherscan.io/address/0xbBB217768d1A2e1105ef867551B4e932B83e4DD3)
 
 ## Testing
 
