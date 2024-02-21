@@ -356,7 +356,6 @@ contract DSCEngine is ReentrancyGuard {
         bonusCollateral = tokenAmountFromDebtCovered * LIQUIDATION_BONUS / 100;
     }
 
-
     // This function is used to get the user's information, given his address, meaning the totalDscMinted and the totalCollateralValue
     function getUserInformation(address userAddress)
         public
